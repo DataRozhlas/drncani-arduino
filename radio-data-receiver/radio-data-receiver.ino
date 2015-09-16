@@ -25,12 +25,11 @@
 #include <RF24.h>
 /*-----( Declare Constants and Pin Numbers )-----*/
 #define CE_PIN   8
-#define CSN_PIN 53 // 53 Mega, 10 Nano
+#define CSN_PIN 10 // 53 Mega, 10 Nano
 
 // NOTE: the "LL" at the end of the constant is "LongLong" type
-const uint64_t pipe = 0xE8E8F0F0E2LL; // Define the transmit pipe
+const uint64_t pipe = 0xE8E8F0F0E1LL; // 0xE8E8F0F0E2LL mega; 0xE8E8F0F0E1LL nano
 
-// 0xE8E8F0F0E1LL 0xE8E8F0F0E2LL
 /*-----( Declare objects )-----*/
 RF24 radio(CE_PIN, CSN_PIN); // Create a Radio
 /*-----( Declare Variables )-----*/
@@ -51,13 +50,19 @@ void setup()   /****** SETUP: RUNS ONCE ******/
   //  pinMode(3, INPUT);
 }//--(end setup )---
 
-
+uint8_t iterator = 0;
 void loop()   /****** LOOP: RUNS CONSTANTLY ******/
 {
+  
   if ( radio.available() )
   {
     unsigned long time = micros();
     radio.read( data, PAYLOAD_SIZE);
+    Serial.write(0xff);
+    Serial.write(0xff);
+    Serial.write(0x00);
+    Serial.write(0x00);
+    iterator++;
     for (uint8_t i = 0; i < PAYLOAD_SIZE; i ++) {
       Serial.write(data[i]);
     }
