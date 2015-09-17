@@ -13,6 +13,7 @@ readAccelPort = (port) ->
   stream = fs.createWriteStream "#__dirname/data/#{Date.now!}-#port.csv"
   absoluteStream = fs.createWriteStream "#__dirname/data/#{Date.now!}-#port.bin"
   altitude = 0
+  samples = 0
   serial.pipe absoluteStream
   serial.on \data (data) ->
     for octet in data
@@ -37,10 +38,12 @@ readAccelPort = (port) ->
       acc = buffer.readInt16BE i
     for i in [1 til accels.length]
       altitude += Math.abs accels[i] - accels[i - 1]
+      samples++
     stream.write "#{Date.now!},#{accels.join ','}\n"
   reportAltitude = ->
-    console.log port, altitude
+    console.log port, altitude, samples
     altitude := 0
+    samples := 0
   setInterval reportAltitude, 500
 readGpsPort = (port) ->
   serial = new SerialPort port, baudrate: 9600
