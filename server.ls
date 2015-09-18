@@ -54,6 +54,6 @@ readGpsPort = (port) ->
     data = data.toString!replace /[\n\r]/g ""
     stream.write "#{Date.now!}|#{data}\n"
 
-readAccelPort "COM3"
+# readAccelPort "COM3"
 readAccelPort "COM9"
-readGpsPort "COM8"
+# readGpsPort "COM8"
