@@ -11,7 +11,7 @@
 
 #define CE_PIN   8
 #define CSN_PIN 10
-uint8_t addresses[][6] = {"1Node","2Node"};
+
 const uint64_t pipe = 0xE8E8F0F0E1LL; // Define the transmit pipe
 RF24 radio(CE_PIN, CSN_PIN); // Create a Radio
 
@@ -42,13 +42,15 @@ void setup(){
   pinMode(13, OUTPUT);
   Wire.begin();
   Wire.beginTransmission(MPU);
-  Wire.write(0x1C); // accelerometer config
-  Wire.write(24); // set sensitivity 16g
-  Wire.endTransmission(true);
-  Wire.beginTransmission(MPU);
   Wire.write(0x6B);  // PWR_MGMT_1 register
   Wire.write(0);     // set to zero (wakes up the MPU-6050)
   Wire.endTransmission(true);
+  
+  Wire.beginTransmission(MPU);
+  Wire.write(0x1C); // accelerometer config
+  Wire.write(24); // set sensitivity 16g
+  Wire.endTransmission(true);
+  
   Timer1.initialize(1000);
   Timer1.attachInterrupt(readData);
 }
