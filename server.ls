@@ -2,10 +2,11 @@ require! {
   fs
   serialport:{SerialPort}
   nmea
+  sse:SSE
+  http
 }
 intro = [0xff 0xff 0x00 0x00]
 reports = []
-
 readAccelPort = (port) ->
   serial = new SerialPort port, baudrate: 115200
   <~ serial.on \open
@@ -59,7 +60,7 @@ readAccelPort = (port) ->
 
 
 readGpsPort = (port) ->
-  serial = new SerialPort port, baudrate: 115200
+  serial = new SerialPort port, baudrate: 57600
   rawStream = fs.createWriteStream "#__dirname/data/#{Date.now!}-#{port}-gps.bin"
   stream = fs.createWriteStream "#__dirname/data/#{Date.now!}-#{port}-gps.csv"
   report =
@@ -81,20 +82,29 @@ readGpsPort = (port) ->
       .filter ->
         it.0 == "$" and "$GPGSV" != it.substr 0, 6
       .forEach ->
-        parsed = nmea.parse it
-        switch parsed.type
-        | 'geo-position'
-          report.latitude = parsed.lat || null
-          report.longitude = parsed.lon || null
-          report.time = parsed.timestamp
-        | 'track-info'
-          report.speed = parsed.speedKmph
+        try
+          parsed = nmea.parse it
+          switch parsed.type
+          | 'geo-position', 'nav-info'
+            if parsed.lat
+              report.latitude = parseInt parsed.lat.substr 0, 2
+              report.latitude += 1/60 * parseFloat parsed.lat.substr 2
+            else
+              report.latitude = null
+            if parsed.lon
+              report.longitude = parseInt parsed.lon.substr 0, 3
+              report.longitude += 1/60 * parseFloat parsed.lon.substr 3
+            else
+              report.longitude = null
+            report.time = parsed.timestamp
+          | 'track-info'
+            report.speed = parsed.speedKmph
     data = data.toString!replace /[\n\r]/g ""
     stream.write "#{Date.now!}|#{data}\n"
 
 readAccelPort "COM3"
-readAccelPort "COM4"
-readGpsPort "COM8"
+readAccelPort "COM5"
+# readGpsPort "COM7"
 
 report = ->
   out = []
@@ -112,7 +122,30 @@ report = ->
   reportOutput JSON.stringify out
 
 reportOutput = (data) ->
-
+  clients.forEach -> it.send data
 
 
 setInterval report, 250
+
+clients = []
+server = http.createServer (req, res) ->
+  console.log "Normal request, shouldn't happen"
+  res.writeHead do
+    * 200
+    * "OK"
+    * "Content-type": "text/plain"
+      "Access-Control-Allow-Origin": "*"
+
+  res.end!
+
+<~ server.listen 8080
+sse = new SSE server
+console.log "Listening, probably"
+sse.on \connection (client) ->
+  clients.push client
+  console.log "+1 = #{clients.length}"
+  client.on \close ->
+    index = clients.indexOf client
+    return if index == -1
+    clients.splice index, 1
+    console.log "-1 = #{clients.length}"
