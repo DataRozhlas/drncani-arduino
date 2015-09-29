@@ -8,7 +8,7 @@ require! {
 intro = [0xff 0xff 0x00 0x00]
 reports = []
 readAccelPort = (port) ->
-  serial = new SerialPort port, baudrate: 115200
+  serial = new SerialPort port, baudrate: 57600
   <~ serial.on \open
   console.log "Open"
   overflow = null
@@ -102,8 +102,8 @@ readGpsPort = (port) ->
     data = data.toString!replace /[\n\r]/g ""
     stream.write "#{Date.now!}|#{data}\n"
 
-readAccelPort "COM3"
-readAccelPort "COM5"
+readAccelPort "COM9"
+# readAccelPort "COM5"
 # readGpsPort "COM7"
 
 report = ->

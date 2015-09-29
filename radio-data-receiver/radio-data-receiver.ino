@@ -39,7 +39,7 @@ unsigned long lastTime = NULL;
 
 void setup()   /****** SETUP: RUNS ONCE ******/
 {
-  Serial.begin(115200);
+  Serial.begin(57600);
   Serial.println("Receiver Starting");
   radio.begin();
   radio.openReadingPipe(1, pipe);
