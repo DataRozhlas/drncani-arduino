@@ -1,9 +1,9 @@
 require! {
   fs
 }
-timeFrom = 1442492093500
-timeTo   = 1442492094500
-accelData = fs.readFileSync "#__dirname/data/1442490640610-COM3.csv"
+timeFrom = 1442910471734
+timeTo   = 1442910473735
+accelData = fs.readFileSync "#__dirname/data/1442908846661-COM3.csv"
   .toString!
   .split "\n"
   .map (line) ->

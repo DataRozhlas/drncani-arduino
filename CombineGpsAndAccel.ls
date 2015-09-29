@@ -3,7 +3,7 @@ require! {
   'stats-lite':stats
 }
 
-accelData = fs.readFileSync "#__dirname/data/1442490640610-COM3.csv"
+accelData = fs.readFileSync "#__dirname/data/1442908846661-COM3.csv"
   .toString!
   .split "\n"
   .map (line) ->
@@ -14,14 +14,14 @@ accelData = fs.readFileSync "#__dirname/data/1442490640610-COM3.csv"
     samples = values.length
     {time, values, altitude, samples}
 
-geoData = fs.readFileSync "#__dirname/data/test.tsv"
+geoData = fs.readFileSync "#__dirname/data/track1.tsv"
   .toString!
   .split "\n"
 geoData.shift!
 geoData .= map (line) ->
   original = line
   toTime = parseInt do
-    line.split "\t" .2
+    line.split "\t" .1
     10
   altitude = 0
   samples = 0
@@ -51,5 +51,5 @@ out = for {original, altitude, samples, points, maximum, minimum} in geoData
   diff = maximum - minimum
   "#original\t#averageAltitude\t#variance\t#altitude\t#maximum\t#minimum\t#diff\t#samples"
 
-out.unshift "timeString\tfromTime\ttoTime\tlat\tlon\tspeed\taverageAltitude\tvariance\taltitude\tmaximum\tminimum\tdiff\tsamples"
-fs.writeFileSync "#__dirname/data/test-out.tsv", out.join "\n"
+out.unshift "fromTime\ttoTime\tlat\tlon\tspeed\taverageAltitude\tvariance\taltitude\tmaximum\tminimum\tdiff\tsamples"
+fs.writeFileSync "#__dirname/data/track1-out.tsv", out.join "\n"
