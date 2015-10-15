@@ -13,7 +13,6 @@ readAccelPort = (port) ->
   console.log "Open"
   overflow = null
   currentData = []
-  introPosition = 0
   stream = fs.createWriteStream "#__dirname/data/#{Date.now!}-#port.csv"
   absoluteStream = fs.createWriteStream "#__dirname/data/#{Date.now!}-#port.bin"
   report =
@@ -31,19 +30,19 @@ readAccelPort = (port) ->
   serial.on \data (data) ->
     for octet in data
       currentData.push octet
-      if octet == intro[introPosition]
-        introPosition++
-        if introPosition >= intro.length
-          processData!
-          introPosition := 0
-          currentData.length = 0
-      else
-        introPosition := 0
+      last4 = currentData.slice -4
+      for value, index in last4
+        if intro[index] != value
+          break
+      if index == intro.length - 1
+        processData!
+        currentData.length = 0
 
   processData = ->
     dataWithoutIntro = currentData.slice 0, -4
     if dataWithoutIntro.length != 32
-      console.log "Error in transport"
+      console.log "Error in transport: #{dataWithoutIntro.length}"
+      console.log dataWithoutIntro
       return
 
     buffer = new Buffer dataWithoutIntro
@@ -55,7 +54,7 @@ readAccelPort = (port) ->
     for i in [1 til accels.length]
       report.altitude += Math.abs accels[i] - accels[i - 1]
       report.samples++
-    report.altitudeAvg = Math.round report.altitude / report.samples
+    report.altitudeAvg = (report.altitude / report.samples).toFixed 2
     stream.write "#{Date.now!},#{accels.join ','}\n"
 
 
@@ -102,9 +101,9 @@ readGpsPort = (port) ->
     data = data.toString!replace /[\n\r]/g ""
     stream.write "#{Date.now!}|#{data}\n"
 
-readAccelPort "COM9"
-# readAccelPort "COM5"
-# readGpsPort "COM7"
+readAccelPort "COM3"
+readAccelPort "COM7"
+readGpsPort "COM6"
 
 report = ->
   out = []

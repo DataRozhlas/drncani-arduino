@@ -25,10 +25,10 @@
 #include <RF24.h>
 /*-----( Declare Constants and Pin Numbers )-----*/
 #define CE_PIN   8
-#define CSN_PIN 10 // 53 Mega, 10 Nano
+#define CSN_PIN 53 // 53 Mega, 10 Nano
 
 // NOTE: the "LL" at the end of the constant is "LongLong" type
-const uint64_t pipe = 0xE8E8F0F0E1LL; // 0xE8E8F0F0E2LL mega; 0xE8E8F0F0E1LL nano
+const uint64_t pipe = 0xE8E8F0F0E2LL; // 0xE8E8F0F0E2LL mega; 0xE8E8F0F0E1LL nano
 
 /*-----( Declare objects )-----*/
 RF24 radio(CE_PIN, CSN_PIN); // Create a Radio

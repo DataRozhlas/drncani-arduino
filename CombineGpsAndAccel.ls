@@ -2,8 +2,10 @@ require! {
   fs
   'stats-lite':stats
 }
-
-accelData = fs.readFileSync "#__dirname/data/1442908846661-COM3.csv"
+wheel = "L"
+source = if wheel == "R" then "right" else "left"
+console.log "Loading accel data"
+accelData = fs.readFileSync "#__dirname/data-combine/#{source}.csv"
   .toString!
   .split "\n"
   .map (line) ->
@@ -14,7 +16,9 @@ accelData = fs.readFileSync "#__dirname/data/1442908846661-COM3.csv"
     samples = values.length
     {time, values, altitude, samples}
 
-geoData = fs.readFileSync "#__dirname/data/track1.tsv"
+
+console.log "Loading geo data"
+geoData = fs.readFileSync "#__dirname/data-combine/track-out.tsv"
   .toString!
   .split "\n"
 geoData.shift!
@@ -29,9 +33,10 @@ geoData .= map (line) ->
   minimum = Infinity
   maximum = -Infinity
   {original, toTime, altitude, samples, points, minimum, maximum}
-currentGeoIndex = 0
 
-for datum in accelData
+console.log "Collating"
+currentGeoIndex = 0
+for datum, index in accelData
   while datum.time > geoData[currentGeoIndex].toTime
     currentGeoIndex++
     if geoData[currentGeoIndex] is void
@@ -46,10 +51,16 @@ for datum in accelData
     geoData[currentGeoIndex].points.push point
 
 out = for {original, altitude, samples, points, maximum, minimum} in geoData
-  averageAltitude = altitude / samples
-  variance = stats.variance points
-  diff = maximum - minimum
-  "#original\t#averageAltitude\t#variance\t#altitude\t#maximum\t#minimum\t#diff\t#samples"
+  # averageAltitude = altitude / samples
+  if points.length
+    variance = stats.variance points
+    diff = maximum - minimum
+  else
+    variance = diff = maximum = minimum =  ""
+  # continue if samples == 0
+  "#original\t#variance\t#altitude\t#maximum\t#minimum\t#diff\t#{points.length}"
 
-out.unshift "fromTime\ttoTime\tlat\tlon\tspeed\taverageAltitude\tvariance\taltitude\tmaximum\tminimum\tdiff\tsamples"
-fs.writeFileSync "#__dirname/data/track1-out.tsv", out.join "\n"
+out.unshift "fromTime\ttoTime\tlat\tlon\tspeed\tvarianceR\taltitudeR\tmaximumR\tminimumR\tdiffR\tsamplesR\tvarianceL\taltitudeL\tmaximumL\tminimumL\tdiffL\tsamplesL"
+console.log "Writing"
+fs.writeFileSync "#__dirname/data-combine/track-out-both.tsv", out.join "\n"
+console.log "Done"
