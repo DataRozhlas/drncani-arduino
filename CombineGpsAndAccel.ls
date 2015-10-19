@@ -2,8 +2,17 @@ require! {
   fs
   'stats-lite':stats
 }
-wheel = "L"
-source = if wheel == "R" then "right" else "left"
+wheel = "L" # R je prvni, potom L
+
+if wheel == "R"
+  source = "right"
+  trackSource = "track"
+  outFile = "track-out"
+else
+  source = "left"
+  trackSource = "track-out"
+  outFile = "track-out-both"
+
 console.log "Loading accel data"
 accelData = fs.readFileSync "#__dirname/data-combine/#{source}.csv"
   .toString!
@@ -18,7 +27,7 @@ accelData = fs.readFileSync "#__dirname/data-combine/#{source}.csv"
 
 
 console.log "Loading geo data"
-geoData = fs.readFileSync "#__dirname/data-combine/track-out.tsv"
+geoData = fs.readFileSync "#__dirname/data-combine/#{trackSource}.tsv"
   .toString!
   .split "\n"
 geoData.shift!
@@ -36,6 +45,7 @@ geoData .= map (line) ->
 
 console.log "Collating"
 currentGeoIndex = 0
+
 for datum, index in accelData
   while datum.time > geoData[currentGeoIndex].toTime
     currentGeoIndex++
@@ -57,10 +67,11 @@ out = for {original, altitude, samples, points, maximum, minimum} in geoData
     diff = maximum - minimum
   else
     variance = diff = maximum = minimum =  ""
+
   # continue if samples == 0
   "#original\t#variance\t#altitude\t#maximum\t#minimum\t#diff\t#{points.length}"
 
-out.unshift "fromTime\ttoTime\tlat\tlon\tspeed\tvarianceR\taltitudeR\tmaximumR\tminimumR\tdiffR\tsamplesR\tvarianceL\taltitudeL\tmaximumL\tminimumL\tdiffL\tsamplesL"
+out.unshift "fromTime\ttoTime\tlat\tlon\tspeed\tkm\tvarianceR\taltitudeR\tmaximumR\tminimumR\tdiffR\tsamplesR\tvarianceL\taltitudeL\tmaximumL\tminimumL\tdiffL\tsamplesL"
 console.log "Writing"
-fs.writeFileSync "#__dirname/data-combine/track-out-both.tsv", out.join "\n"
+fs.writeFileSync "#__dirname/data-combine/#{outFile}.tsv", out.join "\n"
 console.log "Done"
