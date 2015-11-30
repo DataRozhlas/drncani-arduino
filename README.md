@@ -1,6 +1,6 @@
 # Kvalita povrchu D1
 
-Zatím nevydáno
+[Článek na Rozhlas.cz](http://www.rozhlas.cz/zpravy/data/_zprava/tri-roky-modernizace-d1-kde-to-nejvic-drnca--1559167)
 
 ### Data
 
